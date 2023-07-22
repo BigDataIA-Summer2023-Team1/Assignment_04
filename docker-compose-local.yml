@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  # Frontend
+  streamlit:
+    container_name: streamlit
+    build:
+      context: ./frontend
+      # context: streamlit
+    restart: always
+    ports:
+      - "30006:8090"
