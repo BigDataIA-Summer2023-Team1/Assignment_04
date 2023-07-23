@@ -21,7 +21,7 @@ jobs:
           python-version: 3.11
 
       - name: Set up gcloud CLI
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@main
         with:
           project_id: damg7245-assignment04
           service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
