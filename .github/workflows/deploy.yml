@@ -34,8 +34,10 @@ jobs:
         id: docker_build
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker build -t gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG ../../frontend
-          echo "::set-output name=IMAGE_TAG::gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG"
+          docker --version
+          ls
+#          docker build -t gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG ../../frontend
+#          echo "::set-output name=IMAGE_TAG::gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG"
 
       - name: Configure Docker to use gcloud credentials
         run: |
