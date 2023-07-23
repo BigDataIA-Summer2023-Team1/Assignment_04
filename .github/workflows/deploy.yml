@@ -27,8 +27,8 @@ jobs:
       #     service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
       #     export_default_credentials: true
 
-      - name: Dockerize
-        uses: docker/setup-docker@v1
+      # - name: Dockerize
+      #   uses: docker/setup-docker@v1
 
       - name: Build Docker image
         id: docker_build
