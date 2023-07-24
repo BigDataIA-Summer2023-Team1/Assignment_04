@@ -1,35 +1,5 @@
-import streamlit as st
-import numpy as np
 import pandas as pd
-
-from snowflake.sqlalchemy import URL
-from sqlalchemy import create_engine
-from sqlalchemy.exc import DBAPIError
-
-
-def connect_snowflake(user, password, account_identifier):
-    engine = create_engine(URL(
-        user=user,
-        password=password,
-        account=account_identifier,
-        database='SNOWFLAKE_SAMPLE_DATA',
-        schema='TPCDS_SF10TCL',
-        warehouse='COMPUTE_WH',
-        role='ACCOUNTADMIN',
-        numpy=True,
-    )
-    )
-
-    try:
-        connection = engine.connect()
-        st.success("Successfully Connected to Snowflake")
-        print("================================================================")
-
-        return connection
-    except DBAPIError as e:
-        st.error("Couldn't connect to snowflake!!!, Please provide proper credentials")
-    finally:
-        engine.dispose()
+import streamlit as st
 
 
 def prepare_query(aggregation, manufacturing_id, month, records_limit):
@@ -55,11 +25,10 @@ def prepare_query(aggregation, manufacturing_id, month, records_limit):
     """.format(aggregation=aggregation, manufacturing_id=manufacturing_id, month=month, records_limit=records_limit)
 
 
-def fetch_records(conn, aggregation, manufacturing_id, month, records_limit):
-    print("conn: ", conn)
+def fetch_query3_records(_conn, aggregation, manufacturing_id, month, records_limit):
     query = prepare_query(aggregation, manufacturing_id, month, records_limit)
 
-    results = conn.execute(query)
+    results = _conn.execute(query)
 
     return pd.DataFrame(results)
 
@@ -67,25 +36,6 @@ def fetch_records(conn, aggregation, manufacturing_id, month, records_limit):
 st.subheader('Query 3')
 st.write("Report the total extended sales price per item brand of a specific manufacturer for all sales "
          "in a specific month of the year.")
-
-st.session_state['conn'] = None
-with st.sidebar:
-    user = st.text_input("User")
-    account_identifier = st.text_input("Account Identifier")
-    password = st.text_input("Password", type="password")
-
-    connect_to_db_btn = st.button("Connect to Snowflake")
-    if connect_to_db_btn:
-        if not user:
-            st.error("Snowflake username is required!!")
-        if not account_identifier:
-            st.error("Snowflake account_identifier is required!!")
-        if not password:
-            st.error("Snowflake password is required!!")
-
-        if user and account_identifier and password:
-            conn = connect_snowflake(user, password, account_identifier)
-            st.session_state['conn'] = conn
 
 
 with st.form("query", clear_on_submit=False):
@@ -110,9 +60,8 @@ with st.form("query", clear_on_submit=False):
     records_limit = st.slider("No of records to display:", 10, 100, 15)
 
     show_data_btn = st.form_submit_button("Fetch Data")
-
     if show_data_btn:
-        results = fetch_records(st.session_state['conn'], aggregation, manufacturing_id, month_map[month], records_limit)
+        results = fetch_query3_records(st.session_state['conn'], aggregation, manufacturing_id, month_map[month], records_limit)
         custom_style = """
             <style>
             .custom-text-box {
@@ -129,4 +78,3 @@ with st.form("query", clear_on_submit=False):
         st.write(query)
         st.markdown('<div class="custom-text-box">' + query + '</div>', unsafe_allow_html=True)
         st.table(results)
-

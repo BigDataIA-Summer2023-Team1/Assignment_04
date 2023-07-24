@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - git-workflow
 
 
 jobs:
@@ -48,13 +47,8 @@ jobs:
         run: |
           IMAGE_TAG=${{ github.sha }}
           docker build -t northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG ./frontend
-          docker images  
           echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG"
           echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
-
-      # - name: Configure Docker to use gcloud credentials
-      #   run: |
-      #     gcloud auth configure-docker gcr.io
 
       - name: Push Docker image to GCR
         run: |
@@ -69,15 +63,9 @@ jobs:
       #     push: true
       #     tags: northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:${{ github.sha }}
 
-      # - name: Pull latest image from Google Artifact Registry
-      #   run: |
-      #     IMAGE_TAG=$(gcloud artifacts docker images list --repository=streamlit_application --format='value(tags)' --limit=1)
-      #     docker pull gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:${IMAGE_TAG}
-
       - name: Deploy with the new image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          echo "IMAGE_TAG=${IMAGE_TAG}"
           gcloud run deploy assignment04 \
             --image=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:${IMAGE_TAG} \
             --platform=managed \

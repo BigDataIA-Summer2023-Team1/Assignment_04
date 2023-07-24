@@ -1,38 +1,5 @@
-import streamlit as st
-import numpy as np
 import pandas as pd
-
-from snowflake.sqlalchemy import URL
-from sqlalchemy import create_engine
-from sqlalchemy.exc import DBAPIError
-
-
-def connect_snowflake(user, password, account_identifier):
-    connection = None
-
-    engine = create_engine(URL(
-        user=user,
-        password=password,
-        account=account_identifier,
-        database='SNOWFLAKE_SAMPLE_DATA',
-        schema='TPCDS_SF10TCL',
-        warehouse='COMPUTE_WH',
-        role='ACCOUNTADMIN',
-        numpy=True,
-    )
-    )
-
-    try:
-        connection = engine.connect()
-        st.success("Successfully Connected to Snowflake")
-
-        return connection
-    except DBAPIError as e:
-        st.error("Couldn't connect to snowflake!!!, Please provide proper credentials")
-    finally:
-        if connection:
-            connection.close()
-        engine.dispose()
+import streamlit as st
 
 
 def prepare_query(select_one, year, records_limit):
@@ -152,11 +119,10 @@ def prepare_query(select_one, year, records_limit):
     """.format(select_one=select_one, year=year, next_year=year+1, records_limit=records_limit)
 
 
-def fetch_records(conn, select_one, year, records_limit):
-    print("conn: ", conn)
+def fetch_query4_records(_conn, select_one, year, records_limit):
     query = prepare_query(select_one, year, records_limit)
 
-    results = conn.execute(query)
+    results = _conn.execute(query)
 
     return pd.DataFrame(results)
 
@@ -164,27 +130,6 @@ def fetch_records(conn, select_one, year, records_limit):
 st.subheader('Query 4')
 st.write("Find customers who spend more money via catalog than in stores. "
          "Identify preferred customers and their country of origin.")
-
-
-conn = None
-with st.sidebar:
-    user = st.text_input("User")
-    account_identifier = st.text_input("Account Identifier")
-    password = st.text_input("Password", type="password")
-
-    connect_to_db_btn = st.button("Connect to Snowflake")
-    if connect_to_db_btn:
-        if not user:
-            st.error("Snowflake username is required!!")
-        if not account_identifier:
-            st.error("Snowflake account_identifier is required!!")
-        if not password:
-            st.error("Snowflake password is required!!")
-
-        if user and account_identifier and password:
-
-            conn = connect_snowflake(user, password, account_identifier)
-            print("try - conn: ", conn)
 
 with st.form("query", clear_on_submit=False):
     select_one = st.selectbox(
@@ -196,9 +141,8 @@ with st.form("query", clear_on_submit=False):
     records_limit = st.slider("No of records to display:", 10, 100, 15)
 
     show_data_btn = st.form_submit_button("Fetch Data")
-
     if show_data_btn:
-        results = fetch_records(conn, select_one, year, records_limit)
+        results = fetch_query4_records(st.session_state['conn'], select_one, year, records_limit)
         custom_style = """
             <style>
             .custom-text-box {
