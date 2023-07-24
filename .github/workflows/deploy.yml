@@ -39,7 +39,7 @@ jobs:
 
       - name: Configure Docker to use gcloud credentials
         run: |
-          gcloud auth configure-docker
+          gcloud auth configure-docker gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application
 
       - name: Push Docker image to GCR
         run: docker push ${{ steps.docker_build.outputs.IMAGE_TAG }}
