@@ -50,16 +50,24 @@ jobs:
           docker build -t gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG ./frontend
           docker images  
           echo "IMAGE_NAME=gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG"
-          echo "IMAGE_NAME=gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
+          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
 
       # - name: Configure Docker to use gcloud credentials
       #   run: |
       #     gcloud auth configure-docker gcr.io
 
-      - name: Push Docker image to GCR
-        run: |
-          echo ${{ steps.docker_build.outputs.IMAGE_NAME }}
-          docker push ${{ steps.docker_build.outputs.IMAGE_NAME }}
+      # - name: Push Docker image to GCR
+      #   run: |
+      #     echo ${{ steps.docker_build.outputs.IMAGE_NAME }}
+      #     docker push ${{ steps.docker_build.outputs.IMAGE_NAME }}
+      
+      - name: Tag Docker image and push to Google Artifact Registry
+        id: docker-push-tagged
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: |
+            northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:${{ github.sha }}
 
       # - name: Pull latest image from Google Artifact Registry
       #   run: |
