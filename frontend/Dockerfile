@@ -9,6 +9,7 @@ WORKDIR /app
 
 COPY  main.py requirements.txt ./
 COPY pages ./pages
+COPY Images ./Images
 # Copy main.py as source cod and req.txt as dependency
 
 RUN pip install -r requirements.txt
