@@ -11,6 +11,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -20,15 +25,23 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Set up gcloud CLI
-        uses: google-github-actions/setup-gcloud@main
+      - name: Authenticate to Google Cloud
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1'
         with:
-          project_id: damg7245-assignment04
-          service_account_key: ${{ secrets.GCLOUD_SA_KEY }}
-          export_default_credentials: true
+          token_format: 'access_token'
+          workload_identity_provider: 'projects/265069367224/locations/global/workloadIdentityPools/github-actions-test/providers/github'
+          service_account: 'github-actions-test@damg7245-assignment-04.iam.gserviceaccount.com'
 
-      # - name: Dockerize
-      #   uses: docker/setup-docker@v1
+      - name: 'Authenticating to Google Artifact Registry'
+        uses: 'docker/login-action@v1'
+        with:
+          registry: 'northamerica-northeast2-docker.pkg.dev'
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+      
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
 
       - name: Build Docker image
         id: docker_build
@@ -37,9 +50,9 @@ jobs:
           docker build -t gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG ./frontend
           echo "::set-output name=IMAGE_TAG::gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG"
 
-      - name: Configure Docker to use gcloud credentials
-        run: |
-          gcloud auth configure-docker gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application
+      # - name: Configure Docker to use gcloud credentials
+      #   run: |
+      #     gcloud auth configure-docker gcr.io
 
       - name: Push Docker image to GCR
         run: docker push ${{ steps.docker_build.outputs.IMAGE_TAG }}
