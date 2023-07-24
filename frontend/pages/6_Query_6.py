@@ -3,7 +3,9 @@ import pandas as pd
 from snowflake.sqlalchemy import URL
 from sqlalchemy import create_engine
 
-connection = st.session_state['conn']
+connection = None
+if 'conn' in st.session_state:
+    connection = st.session_state['conn']
 
 # Streamlit app
 st.subheader('List all the states with at least 10 customers who during a given month bought items with the price tag at least 20 percent higher than the average price of items in the same category.')
@@ -46,8 +48,11 @@ def compute_results(salesYear, salesMonth):
         having count(*) >= 10
         order by cnt, a.ca_state 
         limit 100;'''.format(salesYear = salesYear, salesMonth = salesMonth)
-    results = connection.execute(query)
-    return results
+    if connection:
+        results = connection.execute(query)
+        return results
+    else:
+        return []
 
 # Search button
 if st.button("Fetch Data"):

@@ -3,7 +3,9 @@ import pandas as pd
 from snowflake.sqlalchemy import URL
 from sqlalchemy import create_engine
 
-connection = st.session_state['conn']
+connection = None
+if 'conn' in st.session_state:
+    connection = st.session_state['conn']
 
 
 def fetch_states_from_snowflake(connection):
@@ -50,8 +52,11 @@ def compute_result(year, agg_field,state):
             order by c_customer_id
             limit 100;'''.format(year=year, agg_field=agg_field, state=state)
     
-    results = connection.execute(query)
-    return results
+    if connection:
+        results = connection.execute(query)
+        return results
+    else:
+        return []
    
 if st.button('Fetch Data'):
     results = compute_result(year,agg_field,state)

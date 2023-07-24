@@ -3,7 +3,9 @@ import pandas as pd
 from snowflake.sqlalchemy import URL
 from sqlalchemy import create_engine
 
-connection = st.session_state['conn']
+connection = None
+if 'conn' in st.session_state:
+    connection = st.session_state['conn']
 
 # Streamlit app
 st.subheader('Report sales, profit, return amount, and net loss in the store, catalog, and web channels for a 14-day window. Rollup results by sales channel and channel specific sales method ')
@@ -143,8 +145,11 @@ def compute_results(salesYear):
         order by channel
                 ,id
         limit 100;'''.format(salesYear = salesYear)
-    results = connection.execute(query).fetchall()
-    return results
+    if connection:
+        results = connection.execute(query).fetchall()
+        return results
+    else:
+        return []
     
 # Search button
 if st.button("Fetch Data"):
