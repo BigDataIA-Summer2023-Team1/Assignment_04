@@ -5,9 +5,20 @@ on:
     branches:
       - main
 
+env:
+  WORKLOAD_IDENTITY_PROVIDER: 'projects/265069367224/locations/global/workloadIdentityPools/github-actions-test/providers/github'
+  SERVICE_ACCOUNT: 'github-actions-test@damg7245-assignment-04.iam.gserviceaccount.com'
+  REGISTRY: 'northamerica-northeast2-docker.pkg.dev'
+  PROJECT_ID: 'damg7245-assignment-04'
+  REPOSITORY: 'applications'
+  IMAGE_DIR: 'streamlit_application'
+  IMAGE_TAG: ${{ github.sha }}
+  REGION: 'northamerica-northeast2'
+  PORT: 8090
+  DOCKERFILE_PATH: './frontend'
 
 jobs:
-  build:
+  setup_python_and_google_cloud:
     runs-on: ubuntu-latest
 
     # Add "id-token" with the intended permissions.
@@ -29,30 +40,36 @@ jobs:
         uses: 'google-github-actions/auth@v1'
         with:
           token_format: 'access_token'
-          workload_identity_provider: 'projects/265069367224/locations/global/workloadIdentityPools/github-actions-test/providers/github'
-          service_account: 'github-actions-test@damg7245-assignment-04.iam.gserviceaccount.com'
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
 
       - name: 'Authenticating to Google Artifact Registry'
         uses: 'docker/login-action@v1'
         with:
-          registry: 'northamerica-northeast2-docker.pkg.dev'
+          registry: ${{ env.REGISTRY }}
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
+  build_and_push:
+    runs-on: ubuntu-latest
+    needs: setup_python_and_google_cloud
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
       - name: Build Docker image
         id: docker_build
         run: |
-          IMAGE_TAG=${{ github.sha }}
-          docker build -t northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG ./frontend
-          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG"
-          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
+          docker build -t ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_DIR }}:${{ env.IMAGE_TAG }} ${{ env.DOCKERFILE_PATH }}
+          echo "IMAGE_NAME=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_DIR }}:${{ env.IMAGE_TAG }}"
+          echo "IMAGE_NAME=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_DIR }}:${{ env.IMAGE_TAG }}" >> $GITHUB_ENV
 
       - name: Push Docker image to GCR
         run: |
-          echo ${IMAGE_NAME}
           docker push ${IMAGE_NAME}
 
       # - name: Build, Tag Docker image and push to Google Artifact Registry
@@ -62,14 +79,18 @@ jobs:
       #     context: ./frontend
       #     push: true
       #     tags: northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:${{ github.sha }}
+  
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push
 
+    steps:
       - name: Deploy with the new image
         run: |
-          IMAGE_TAG=${{ github.sha }}
           gcloud run deploy assignment04 \
-            --image=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:${IMAGE_TAG} \
+            --image=${IMAGE_NAME} \
             --platform=managed \
-            --region=northamerica-northeast2 \
-            --port=8090 \
+            --region=${{ env.REGION }} \
+            --port=${{ env.PORT }} \
             --allow-unauthenticated
 
