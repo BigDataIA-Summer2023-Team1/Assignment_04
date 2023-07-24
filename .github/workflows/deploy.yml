@@ -39,7 +39,7 @@ jobs:
           registry: 'northamerica-northeast2-docker.pkg.dev'
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
-      
+
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
@@ -76,7 +76,7 @@ jobs:
 
       - name: Deploy with the new image
         run: |
-          IMAGE_TAG=$(gcloud artifacts docker images list --repository=streamlit_application --format='value(tags)' --limit=1)
+          IMAGE_TAG=${{ github.sha }}
           echo "IMAGE_TAG=${IMAGE_TAG}"
           gcloud run deploy assignment04 \
             --image=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:${IMAGE_TAG} \
