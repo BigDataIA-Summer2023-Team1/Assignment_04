@@ -33,8 +33,8 @@ def fetch_query3_records(_conn, aggregation, manufacturing_id, month, records_li
     return pd.DataFrame(results)
 
 
-st.subheader('Query 3')
-st.write("Report the total extended sales price per item brand of a specific manufacturer for all sales "
+
+st.subheader("Report the total extended sales price per item brand of a specific manufacturer for all sales "
          "in a specific month of the year.")
 
 

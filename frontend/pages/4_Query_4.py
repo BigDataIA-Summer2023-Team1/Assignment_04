@@ -127,8 +127,8 @@ def fetch_query4_records(_conn, select_one, year, records_limit):
     return pd.DataFrame(results)
 
 
-st.subheader('Query 4')
-st.write("Find customers who spend more money via catalog than in stores. "
+
+st.subheader("Find customers who spend more money via catalog than in stores. "
          "Identify preferred customers and their country of origin.")
 
 with st.form("query", clear_on_submit=False):
