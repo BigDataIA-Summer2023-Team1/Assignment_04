@@ -36,7 +36,7 @@ jobs:
       - name: 'Authenticating to Google Artifact Registry'
         uses: 'docker/login-action@v1'
         with:
-          registry: 'northamerica-northeast2-docker.pkg.dev'
+          registry: 'gcr.io'
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
       
@@ -47,14 +47,14 @@ jobs:
         id: docker_build
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker build -t northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG ./frontend
+          docker build -t gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG ./frontend
           docker images  
-          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG"
-          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
+          echo "IMAGE_NAME=gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG"
+          echo "IMAGE_NAME=gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Configure Docker to use gcloud credentials
         run: |
-          gcloud auth configure-docker northamerica-northeast2-docker.pkg.dev --quiet
+          gcloud auth configure-docker gcr.io
 
       - name: Push Docker image to GCR
         run: |
