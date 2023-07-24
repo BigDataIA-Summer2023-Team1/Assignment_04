@@ -3,7 +3,9 @@ import pandas as pd
 from snowflake.sqlalchemy import URL
 from sqlalchemy import create_engine
 
-connection = st.session_state['conn']
+connection = None
+if 'conn' in st.session_state:
+    connection = st.session_state['conn']
 
 # Streamlit app
 
@@ -71,8 +73,11 @@ def compute_data(year):
             order by d_week_seq1;
     '''.format(year=year, next_year=year+1)
        
-    results = connection.execute(query)    
-    return results
+    if connection:
+        results = connection.execute(query)
+        return results
+    else:
+        return []
     
 if st.button('Fetch Data'):
     results = compute_data(year)

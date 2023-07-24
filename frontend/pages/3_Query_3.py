@@ -28,10 +28,12 @@ def prepare_query(aggregation, manufacturing_id, month, records_limit):
 def fetch_query3_records(_conn, aggregation, manufacturing_id, month, records_limit):
     query = prepare_query(aggregation, manufacturing_id, month, records_limit)
 
-    results = _conn.execute(query)
+    results = _conn.execute(query).fetchall()
 
-    return pd.DataFrame(results)
+    df = pd.DataFrame(results)
+    df['sum_agg'] = df['sum_agg'].astype(float).round(2)
 
+    return df
 
 
 st.subheader("Report the total extended sales price per item brand of a specific manufacturer for all sales "
