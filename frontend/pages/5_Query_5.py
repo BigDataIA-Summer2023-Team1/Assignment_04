@@ -143,7 +143,7 @@ def compute_results(salesYear):
         order by channel
                 ,id
         limit 100;'''.format(salesYear = salesYear)
-    results = connection.execute(query)
+    results = connection.execute(query).fetchall()
     return results
     
 # Search button
@@ -155,6 +155,9 @@ if st.button("Fetch Data"):
     if results:
         # Convert results to a DataFrame
         df = pd.DataFrame(results)
+        df['sales'] = df['sales'].astype(float).round(2)
+        df['returns'] = df['returns'].astype(float).round(2)
+        df['profit'] = df['profit'].astype(float).round(2)
         # Display the DataFrame as a table
         st.table(df)
     else:
