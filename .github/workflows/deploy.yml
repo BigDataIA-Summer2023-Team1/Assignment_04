@@ -1,0 +1,75 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Python3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Authenticate to Google Cloud
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: 'projects/265069367224/locations/global/workloadIdentityPools/github-actions-test/providers/github'
+          service_account: 'github-actions-test@damg7245-assignment-04.iam.gserviceaccount.com'
+
+      - name: 'Authenticating to Google Artifact Registry'
+        uses: 'docker/login-action@v1'
+        with:
+          registry: 'northamerica-northeast2-docker.pkg.dev'
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+
+      - name: Build Docker image
+        id: docker_build
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          docker build -t northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG ./frontend
+          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG"
+          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Push Docker image to GCR
+        run: |
+          echo ${IMAGE_NAME}
+          docker push ${IMAGE_NAME}
+
+      # - name: Build, Tag Docker image and push to Google Artifact Registry
+      #   id: docker-push-tagged
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: ./frontend
+      #     push: true
+      #     tags: northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:${{ github.sha }}
+
+      - name: Deploy with the new image
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          gcloud run deploy assignment04 \
+            --image=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:${IMAGE_TAG} \
+            --platform=managed \
+            --region=northamerica-northeast2 \
+            --port=8090 \
+            --allow-unauthenticated
+
