@@ -36,7 +36,7 @@ jobs:
       - name: 'Authenticating to Google Artifact Registry'
         uses: 'docker/login-action@v1'
         with:
-          registry: 'gcr.io'
+          registry: 'northamerica-northeast2-docker.pkg.dev'
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
       
@@ -47,10 +47,10 @@ jobs:
         id: docker_build
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker build -t gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:$IMAGE_TAG ./frontend
+          docker build -t northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG ./frontend
           docker images  
-          echo "IMAGE_NAME=gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:$IMAGE_TAG"
-          echo "IMAGE_NAME=gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
+          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG"
+          echo "IMAGE_NAME=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Configure Docker to use gcloud credentials
         run: |
@@ -79,7 +79,7 @@ jobs:
           IMAGE_TAG=$(gcloud artifacts docker images list --repository=streamlit_application --format='value(tags)' --limit=1)
           echo "IMAGE_TAG=${IMAGE_TAG}"
           gcloud run deploy assignment04 \
-            --image=gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:${IMAGE_TAG} \
+            --image=northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/applications/streamlit_application:${IMAGE_TAG} \
             --platform=managed \
             --region=northamerica-northeast2
 
