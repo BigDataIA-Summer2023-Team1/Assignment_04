@@ -87,6 +87,24 @@ jobs:
     needs: build_and_push
 
     steps:
+      - name: Authenticate to Google Cloud
+        id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+
+      - name: 'Authenticating to Google Artifact Registry'
+        uses: 'docker/login-action@v1'
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+        
       - name: Pull latest image from Google Artifact Registry
         run: |
           docker pull ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_DIR }}:${{ env.IMAGE_TAG }}
