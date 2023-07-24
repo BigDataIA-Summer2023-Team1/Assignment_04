@@ -16,6 +16,7 @@ env:
   REGION: 'northamerica-northeast2'
   PORT: 8090
   DOCKERFILE_PATH: './frontend'
+  CLOUD_RUN_SERVICE: 'assignment04'
 
 jobs:
   setup_python:
@@ -86,10 +87,15 @@ jobs:
     needs: build_and_push
 
     steps:
+      - name: Pull latest image from Google Artifact Registry
+        run: |
+          docker pull ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_DIR }}:${{ env.IMAGE_TAG }}
+
       - name: Deploy with the new image
         run: |
-          gcloud run deploy assignment04 \
-            --image=${IMAGE_NAME} \
+          echo ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_DIR }}:${{ env.IMAGE_TAG }}
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+            --image=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE_DIR }}:${{ env.IMAGE_TAG }} \
             --platform=managed \
             --region=${{ env.REGION }} \
             --port=${{ env.PORT }} \
