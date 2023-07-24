@@ -48,14 +48,14 @@ jobs:
         run: |
           IMAGE_TAG=${{ github.sha }}
           docker images  
-          echo "gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG"
+          echo "IMAGE_NAME=gcr.io/northamerica-northeast2-docker.pkg.dev/damg7245-assignment04/streamlit_application:$IMAGE_TAG" >> $GITHUB_ENV
 
       # - name: Configure Docker to use gcloud credentials
       #   run: |
       #     gcloud auth configure-docker gcr.io
 
       - name: Push Docker image to GCR
-        run: docker push ${{ steps.docker_build.outputs.IMAGE_TAG }}
+        run: docker push ${{ steps.docker_build.outputs.IMAGE_NAME }}
 
       # - name: Pull latest image from Google Artifact Registry
       #   run: |
