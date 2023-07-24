@@ -18,7 +18,7 @@ env:
   DOCKERFILE_PATH: './frontend'
 
 jobs:
-  setup_python_and_google_cloud:
+  setup_python:
     runs-on: ubuntu-latest
 
     # Add "id-token" with the intended permissions.
@@ -35,6 +35,14 @@ jobs:
         with:
           python-version: 3.11
 
+  build_and_push:
+    runs-on: ubuntu-latest
+    needs: setup_python
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
       - name: Authenticate to Google Cloud
         id: 'auth'
         uses: 'google-github-actions/auth@v1'
@@ -52,14 +60,6 @@ jobs:
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
-
-  build_and_push:
-    runs-on: ubuntu-latest
-    needs: setup_python_and_google_cloud
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
 
       - name: Build Docker image
         id: docker_build
