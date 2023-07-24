@@ -59,7 +59,7 @@ jobs:
       - name: Push Docker image to GCR
         run: |
           echo ${{ steps.docker_build.outputs.IMAGE_NAME }}
-          docker push ${{ steps.docker_build.outputs.IMAGE_NAME }}
+          docker push "${{ steps.docker_build.outputs.IMAGE_NAME }}"
 
       # - name: Build, Tag Docker image and push to Google Artifact Registry
       #   id: docker-push-tagged
