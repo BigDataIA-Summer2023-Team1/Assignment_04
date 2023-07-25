@@ -31,6 +31,9 @@ Task -2:
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/)
 [![Python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)](https://www.python.org/)
 [![GitHub Actions](https://img.shields.io/badge/Github%20Actions-282a2e?style=for-the-badge&logo=githubactions&logoColor=367cfe)](https://github.com/features/actions)
+[![Snowflake](https://img.shields.io/badge/snowflake-blue?style=for-the-badge&logo=SNOWFLAKE)](https://docs.snowflake.com/)
+![Google Cloud Run](https://img.shields.io/badge/Google_Cloud-Green?style=for-the-badge&logo=google-cloud&logoColor=white)
+
 
 ## Data Source :flashlight:
 1. https://docs.snowflake.com/en/user-guide/sample-data-tpcds
