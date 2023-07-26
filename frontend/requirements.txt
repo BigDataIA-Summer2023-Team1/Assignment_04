@@ -1,3 +1,4 @@
 streamlit==1.23.1
 pyarrow==10.0.1
 snowflake-sqlalchemy
+snowflake-snowpark-python

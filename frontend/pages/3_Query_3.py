@@ -1,9 +1,12 @@
 import pandas as pd
 import streamlit as st
 
+from utils.generic import connect_and_execute_query
 
-def prepare_query(aggregation, manufacturing_id, month, records_limit):
-    return """
+
+@st.cache_resource(max_entries=1000)
+def fetch_data(aggregation, manufacturing_id, month, records_limit):
+    query =  """
         select dt.d_year 
            ,item.i_brand_id brand_id 
            ,item.i_brand brand
@@ -24,16 +27,18 @@ def prepare_query(aggregation, manufacturing_id, month, records_limit):
          limit {records_limit};
     """.format(aggregation=aggregation, manufacturing_id=manufacturing_id, month=month, records_limit=records_limit)
 
+    return connect_and_execute_query(query)
 
-def fetch_query3_records(_conn, aggregation, manufacturing_id, month, records_limit):
-    query = prepare_query(aggregation, manufacturing_id, month, records_limit)
 
-    results = _conn.execute(query).fetchall()
-
-    df = pd.DataFrame(results)
-    df['sum_agg'] = df['sum_agg'].astype(float).round(2)
-
-    return df
+# def fetch_query3_records(_conn, aggregation, manufacturing_id, month, records_limit):
+#     query = prepare_query(aggregation, manufacturing_id, month, records_limit)
+#
+#     results = _conn.execute(query).fetchall()
+#
+#     df = pd.DataFrame(results)
+#     df['sum_agg'] = df['sum_agg'].astype(float).round(2)
+#
+#     return df
 
 
 st.subheader("Report the total extended sales price per item brand of a specific manufacturer for all sales "
@@ -63,20 +68,9 @@ with st.form("query", clear_on_submit=False):
 
     show_data_btn = st.form_submit_button("Fetch Data")
     if show_data_btn:
-        results = fetch_query3_records(st.session_state['conn'], aggregation, manufacturing_id, month_map[month], records_limit)
-        custom_style = """
-            <style>
-            .custom-text-box {
-                border: 2px solid green;
-                padding: 10px;
-                border-radius: 5px;
-            }
-            </style>
-        """
+        results = fetch_data(aggregation, manufacturing_id, month_map[month], records_limit)
 
-        query = prepare_query(aggregation, manufacturing_id, month_map[month], records_limit)
-
-        # Display the text inside the styled box
-        st.write(query)
-        st.markdown('<div class="custom-text-box">' + query + '</div>', unsafe_allow_html=True)
-        st.table(results)
+        if not results.empty:
+            st.table(results)
+        else:
+            st.write("No results found.")

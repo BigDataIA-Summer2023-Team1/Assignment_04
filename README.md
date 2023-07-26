@@ -22,9 +22,11 @@ Task -1:
 
 
 Task -2:
-1. Dockerize the streamlit application.
-2. Write github actions that continuously integrate and continuously Deploy to GCP Cloud Run.
-3. Deploy the streamlit application on GCP cloud run.
+1. Connect to snowflake using toml file.
+2. Leverage streamlit cache for better performance.
+3. Dockerize the streamlit application.
+4. Write github actions that continuously integrate and continuously Deploy to GCP Cloud Run.
+5. Deploy the streamlit application on GCP cloud run.
 
 ## Technologies Used :computer:
 [![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)](https://streamlit.io/)
@@ -47,6 +49,7 @@ Task -2:
 streamlit==1.23.1
 pyarrow==10.0.1
 snowflake-sqlalchemy
+snowflake-snowpark-python
 ```
 
 ## Project Structure
@@ -118,6 +121,9 @@ To run the application locally, follow these steps:
 6. Github Actions: https://docs.github.com/en/actions
 7. Google Cloud Run: https://cloud.google.com/run#section-4
 8. Github Action for GCloud Authentication: https://github.com/marketplace/actions/authenticate-to-google-cloud
+9. Snowflake-Streamlit Connection :https://docs.streamlit.io/knowledge-base/tutorials/databases/snowflake
+10. Streamlit Caching: https://docs.streamlit.io/library/advanced-features/caching
+11. QueryViz: http://demo.queryvis.com/
 
 ## Learning Outcomes
 1. To leverage streamlit for visualization/data insights drawn from snowflake computations.

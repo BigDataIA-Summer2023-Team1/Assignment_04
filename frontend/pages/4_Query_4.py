@@ -1,9 +1,11 @@
 import pandas as pd
 import streamlit as st
 
+from utils.generic import connect_and_execute_query
 
-def prepare_query(select_one, year, records_limit):
-    return """
+@st.cache_resource(max_entries=1000)
+def fetch_data(select_one, year, records_limit):
+    query =  """
         with year_total as (
          select c_customer_id customer_id
                ,c_first_name customer_first_name
@@ -118,14 +120,15 @@ def prepare_query(select_one, year, records_limit):
         limit {records_limit};
     """.format(select_one=select_one, year=year, next_year=year+1, records_limit=records_limit)
 
+    return connect_and_execute_query(query)
 
-def fetch_query4_records(_conn, select_one, year, records_limit):
-    query = prepare_query(select_one, year, records_limit)
 
-    results = _conn.execute(query)
-
-    return pd.DataFrame(results)
-
+# def fetch_query4_records(_conn, select_one, year, records_limit):
+#     query = prepare_query(select_one, year, records_limit)
+#
+#     results = _conn.execute(query)
+#
+#     return pd.DataFrame(results)
 
 
 st.subheader("Find customers who spend more money via catalog than in stores. "
@@ -142,20 +145,9 @@ with st.form("query", clear_on_submit=False):
 
     show_data_btn = st.form_submit_button("Fetch Data")
     if show_data_btn:
-        results = fetch_query4_records(st.session_state['conn'], select_one, year, records_limit)
-        custom_style = """
-            <style>
-            .custom-text-box {
-                border: 2px solid green;
-                padding: 10px;
-                border-radius: 5px;
-            }
-            </style>
-        """
+        results = fetch_data(select_one, year, records_limit)
 
-        query = prepare_query(select_one, year, records_limit)
-
-        # Display the text inside the styled box
-        st.write(query)
-        st.markdown('<div class="custom-text-box">' + query + '</div>', unsafe_allow_html=True)
-        st.table(results)
+        if not results.empty:
+            st.table(results)
+        else:
+            st.write("No results found.")

@@ -1,11 +1,7 @@
 import streamlit as st
 import pandas as pd
-from snowflake.sqlalchemy import URL
-from sqlalchemy import create_engine
 
-connection = None
-if 'conn' in st.session_state:
-    connection = st.session_state['conn']
+from utils.generic import connect_and_execute_query
 
 # Streamlit app
 st.subheader('Report sales, profit, return amount, and net loss in the store, catalog, and web channels for a 14-day window. Rollup results by sales channel and channel specific sales method ')
@@ -19,7 +15,9 @@ salesYear = st.selectbox(
 st.write('You selected:', salesYear)
 st.write('Sales Date Range: 14 days from', str(salesYear) + "-08-01")
 
-def compute_results(salesYear):
+
+@st.cache_resource(max_entries=1000)
+def fetch_data(salesYear):
     query = ''' with ssr as
         (select s_store_id,
                 sum(sales_price) as sales,
@@ -145,19 +143,17 @@ def compute_results(salesYear):
         order by channel
                 ,id
         limit 100;'''.format(salesYear = salesYear)
-    if connection:
-        results = connection.execute(query).fetchall()
-        return results
-    else:
-        return []
-    
+
+    return connect_and_execute_query(query)
+
+
 # Search button
 if st.button("Fetch Data"):
     # Perform the search
-    results = compute_results(salesYear)
+    results = fetch_data(salesYear)
     # Display results
     st.subheader("Search Results")
-    if results:
+    if not results.empty:
         # Convert results to a DataFrame
         df = pd.DataFrame(results)
         df['sales'] = df['sales'].astype(float).round(2)

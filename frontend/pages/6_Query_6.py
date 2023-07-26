@@ -1,11 +1,8 @@
 import streamlit as st
 import pandas as pd
-from snowflake.sqlalchemy import URL
-from sqlalchemy import create_engine
 
-connection = None
-if 'conn' in st.session_state:
-    connection = st.session_state['conn']
+from utils.generic import connect_and_execute_query
+
 
 # Streamlit app
 st.subheader('List all the states with at least 10 customers who during a given month bought items with the price tag at least 20 percent higher than the average price of items in the same category.')
@@ -24,7 +21,9 @@ salesMonth = st.selectbox(
 
 st.write('Month selected:', salesMonth)
 
-def compute_results(salesYear, salesMonth):
+
+@st.cache_resource(max_entries=1000)
+def fetch_data(salesYear, salesMonth):
     query = ''' select a.ca_state state, count(*) cnt
         from customer_address a
             ,customer c
@@ -48,23 +47,18 @@ def compute_results(salesYear, salesMonth):
         having count(*) >= 10
         order by cnt, a.ca_state 
         limit 100;'''.format(salesYear = salesYear, salesMonth = salesMonth)
-    if connection:
-        results = connection.execute(query)
-        return results
-    else:
-        return []
+
+    return connect_and_execute_query(query)
+
 
 # Search button
 if st.button("Fetch Data"):
     # Perform the search
-    results = compute_results(salesYear, salesMonth)
+    results = fetch_data(salesYear, salesMonth)
     # Display results
     st.subheader("Query Results")
-    if results:
-        # Convert results to a DataFrame
-        df = pd.DataFrame(results)
-        # Display the DataFrame as a table
-        st.table(df)
+    if not results.empty:
+        st.table(results)
     else:
         st.write("No results found.")
 

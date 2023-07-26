@@ -1,34 +1,37 @@
-import streamlit as st
 import pandas as pd
-from snowflake.sqlalchemy import URL
-from sqlalchemy import create_engine
+import streamlit as st
 
-connection = None
-if 'conn' in st.session_state:
-    connection = st.session_state['conn']
+from utils.generic import connect_and_execute_query
 
 
-def fetch_states_from_snowflake(connection):
+@st.cache_data(max_entries=1000)
+def fetch_states_from_snowflake(connection=None):
     states_query = 'SELECT DISTINCT S_STATE  FROM store'
-    states_results = connection.execute(states_query)
-    states = [result[0] for result in states_results]
-    return states
+    states_results = connect_and_execute_query(states_query)
+
+
+    # states = [result[0] for result in states_results]
+    return [row.S_STATE for row in states_results.itertuples()]
+
 
 # Streamlit App
-st.subheader('Customers who have returned items more than 20% more often than the average customer returns for a store in a given state for a given year.')
+st.subheader(
+    'Customers who have returned items more than 20% more often than the average customer returns for a store in a given state for a given year.')
 
- # Define the list of available agg fields
-available_agg_fields = ["SR_RETURN_AMT", "SR_FEE", "SR_REFUNDED_CASH", "SR_RETURN_AMT_INC_TAX", "SR_REVERSED_CHARGE", "SR_STORE_CREDIT", "SR_RETURN_TAX"]
-
+# Define the list of available agg fields
+available_agg_fields = ["SR_RETURN_AMT", "SR_FEE", "SR_REFUNDED_CASH", "SR_RETURN_AMT_INC_TAX", "SR_REVERSED_CHARGE",
+                        "SR_STORE_CREDIT", "SR_RETURN_TAX"]
 
 # Fetch the list of states from Snowflake table
-states = fetch_states_from_snowflake(connection)
+states = fetch_states_from_snowflake()
 # Input fields
 year = st.slider('Select Year', min_value=1998, max_value=2001, step=1, value=1998)
 agg_field = st.selectbox('Select Agg Fields', available_agg_fields)
 state = st.selectbox('Select State', states)
 
-def compute_result(year, agg_field,state):
+
+@st.cache_data(max_entries=1000)
+def fetch_data(year, agg_field, state):
     query='''with customer_total_return as
             (select sr_customer_sk as ctr_customer_sk
             ,sr_store_sk as ctr_store_sk
@@ -51,21 +54,18 @@ def compute_result(year, agg_field,state):
             and ctr1.ctr_customer_sk = c_customer_sk
             order by c_customer_id
             limit 100;'''.format(year=year, agg_field=agg_field, state=state)
-    
-    if connection:
-        results = connection.execute(query)
-        return results
-    else:
-        return []
-   
+
+    res = connect_and_execute_query(query)
+
+    return res
+
+
 if st.button('Fetch Data'):
-    results = compute_result(year,agg_field,state)
-     # Display results
+    results = fetch_data(year, agg_field, state)
+    # Display results
     st.subheader("Search Results")
-    if results:
-        # Convert results to a DataFrame
-        df = pd.DataFrame(results)
-        # Display the DataFrame as a table
-        st.table(df)
+    if not results.empty:
+
+        st.table(results)
     else:
         st.write("No results found.")

@@ -1,11 +1,6 @@
 import streamlit as st
 import pandas as pd
-from snowflake.sqlalchemy import URL
-from sqlalchemy import create_engine
-
-connection = None
-if 'conn' in st.session_state:
-    connection = st.session_state['conn']
+from utils.generic import connect_and_execute_query
 
 # Streamlit app
 
@@ -13,8 +8,10 @@ st.subheader('Report of increase of weekly web and catalog sales from one year t
 # Year selection using slider
 year = st.slider('Select Year', min_value=1998, max_value=2001, step=1, value=1998)
 
-def compute_data(year):
-    query= '''with wscs as
+
+@st.cache_resource(max_entries=1000)
+def fetch_data(year):
+    query = '''with wscs as
             (select sold_date_sk
                     ,sales_price
             from (select ws_sold_date_sk sold_date_sk
@@ -71,22 +68,16 @@ def compute_data(year):
                     d_year = {next_year}) z
             where d_week_seq1=d_week_seq2-53
             order by d_week_seq1;
-    '''.format(year=year, next_year=year+1)
-       
-    if connection:
-        results = connection.execute(query)
-        return results
-    else:
-        return []
-    
+    '''.format(year=year, next_year=year + 1)
+
+    return connect_and_execute_query(query)
+
+
 if st.button('Fetch Data'):
-    results = compute_data(year)
-     # Display results
+    results = fetch_data(year)
+    # Display results
     st.subheader("Search Results")
-    if results:
-        # Convert results to a DataFrame
-        df = pd.DataFrame(results)
-        # Display the DataFrame as a table
-        st.table(df)
+    if not results.empty:
+        st.table(results)
     else:
         st.write("No results found.")

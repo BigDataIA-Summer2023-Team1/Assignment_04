@@ -1,4 +1,4 @@
-FROM python:3.10.6-slim
+FROM python:3.8
 # Pull the base docker image of python with tag 3.10.6-slim
 
 RUN pip install --upgrade pip
@@ -9,6 +9,8 @@ WORKDIR /app
 
 COPY  main.py requirements.txt ./
 COPY pages ./pages
+COPY utils ./utils
+COPY .streamlit ./.streamlit
 COPY Images ./Images
 # Copy main.py as source cod and req.txt as dependency
 

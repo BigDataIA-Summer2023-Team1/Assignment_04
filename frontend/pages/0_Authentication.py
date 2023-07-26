@@ -48,6 +48,4 @@ if connect_to_db_btn:
 
     if user and account_identifier and password:
         conn = connect_snowflake(user, password, account_identifier)
-        print("conn-obj: ", conn)
         st.session_state['conn'] = conn
-        print("conn-try: ", st.session_state['conn'])
