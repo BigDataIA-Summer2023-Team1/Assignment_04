@@ -3,7 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main
+      - master
 
 env:
   WORKLOAD_IDENTITY_PROVIDER: 'projects/265069367224/locations/global/workloadIdentityPools/github-actions-test/providers/github'
@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-      
+
       - name: Authenticate to Google Cloud
         id: 'auth'
         uses: 'google-github-actions/auth@v1'
@@ -81,7 +81,7 @@ jobs:
       #     context: ./frontend
       #     push: true
       #     tags: northamerica-northeast2-docker.pkg.dev/damg7245-assignment-04/streamlit_application:${{ github.sha }}
-  
+
   deploy:
     runs-on: ubuntu-latest
     needs: build_and_push
